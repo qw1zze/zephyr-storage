@@ -1,0 +1,30 @@
+services:
+  storage-api:
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      ipfs:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      - SERVER_PORT=8080
+      - IPFS_API_URL=http://ipfs:5001
+      - IPFS_GATEWAY_URL=http://ipfs:8080
+
+  ipfs:
+    image: ipfs/kubo:latest
+    ports:
+      - "5001:5001"
+      - "8081:8080"
+    volumes:
+      - ipfs_data:/data/ipfs
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "-O", "/dev/null", "--post-data=", "http://localhost:5001/api/v0/version"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  ipfs_data:
