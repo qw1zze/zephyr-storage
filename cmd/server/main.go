@@ -25,9 +25,9 @@ func main() {
 		Level: slog.LevelDebug,
 	}))
 
-	ipfsClient := ipfs.NewClient(cfg.IPFSApiURL, cfg.IPFSGatewayURL, log)
-	svc := service.NewService(ipfsClient, log)
-	h := handler.NewHandler(svc, log)
+	ipfsClient := ipfs.New(cfg.IPFSApiURL, cfg.IPFSGatewayURL, 30, cfg.MaxBlobSizeMB, log)
+	svc := service.NewService(ipfsClient, cfg.MaxBlobSizeMB, log)
+	h := handler.NewHandler(svc, cfg.MaxBlobSizeMB, log)
 
 	app := fiber.New(fiber.Config{
 		ReadTimeout:  10 * time.Second,

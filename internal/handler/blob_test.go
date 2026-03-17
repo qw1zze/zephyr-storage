@@ -16,7 +16,6 @@ import (
 	"zephyr-storage/internal/service"
 )
 
-// mockBlobService is a hand-rolled mock for the blobService interface.
 type mockBlobService struct {
 	uploadFn func(ctx context.Context, data []byte) (string, error)
 	getFn    func(ctx context.Context, cid string) ([]byte, error)
@@ -30,16 +29,13 @@ func (m *mockBlobService) Get(ctx context.Context, cid string) ([]byte, error) {
 	return m.getFn(ctx, cid)
 }
 
-// maxSizeMB used across handler tests (10 bytes for easy overflow testing).
 const testMaxSizeB = 10
 
 func newTestApp(svc blobService) *fiber.App {
 	log := slog.New(slog.NewTextHandler(io.Discard, nil))
-	// Use testMaxSizeB directly by building handler with 0 MB and overriding.
 	h := &Handler{svc: svc, maxSizeB: testMaxSizeB, log: log}
 
 	app := fiber.New(fiber.Config{
-		// Large enough so Fiber doesn't reject before our handler runs.
 		BodyLimit: 1024 * 1024,
 	})
 	app.Post("/v1/blobs", h.UploadBlob)
@@ -68,8 +64,6 @@ func readJSON(resp *http.Response) map[string]interface{} {
 	_ = json.NewDecoder(resp.Body).Decode(&m)
 	return m
 }
-
-// --- UploadBlob tests ---
 
 func TestUploadBlob_Success(t *testing.T) {
 	mock := &mockBlobService{
@@ -107,7 +101,6 @@ func TestUploadBlob_WrongContentType(t *testing.T) {
 func TestUploadBlob_TooLarge(t *testing.T) {
 	app := newTestApp(&mockBlobService{})
 
-	// testMaxSizeB + 1 bytes to exceed handler limit
 	data := make([]byte, testMaxSizeB+1)
 	resp := doRequest(app, http.MethodPost, "/v1/blobs", data, "application/octet-stream")
 
@@ -123,10 +116,10 @@ func TestUploadBlob_TooLarge(t *testing.T) {
 func TestUploadBlob_ServiceError(t *testing.T) {
 	mock := &mockBlobService{
 		uploadFn: func(_ context.Context, _ []byte) (string, error) {
-			return "", service.ErrEmptyData // any unexpected error maps to 500
+			return "", service.ErrEmptyData
 		},
 	}
-	// Use a service that returns an unmapped error to trigger 500.
+
 	errSvc := &mockBlobService{
 		uploadFn: func(_ context.Context, _ []byte) (string, error) {
 			return "", io.ErrUnexpectedEOF
@@ -145,8 +138,6 @@ func TestUploadBlob_ServiceError(t *testing.T) {
 		t.Fatalf("unexpected error: %v", body["error"])
 	}
 }
-
-// --- GetBlob tests ---
 
 func TestGetBlob_Success(t *testing.T) {
 	payload := []byte("binary data")

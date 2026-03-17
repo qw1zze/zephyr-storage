@@ -8,7 +8,6 @@ import (
 	"zephyr-storage/internal/ipfs"
 )
 
-// mockIPFSClient is a hand-rolled mock for the ipfsClient interface.
 type mockIPFSClient struct {
 	addFn func(ctx context.Context, data []byte) (string, error)
 	getFn func(ctx context.Context, cid string) ([]byte, error)
@@ -25,8 +24,6 @@ func (m *mockIPFSClient) Get(ctx context.Context, cid string) ([]byte, error) {
 func newTestService(client ipfsClient, maxSizeMB int64) *Service {
 	return NewService(client, maxSizeMB, noopLogger())
 }
-
-// --- Upload tests ---
 
 func TestUpload_Success(t *testing.T) {
 	mock := &mockIPFSClient{
@@ -81,8 +78,6 @@ func TestUpload_IPFSError(t *testing.T) {
 	}
 }
 
-// --- Get tests ---
-
 func TestGet_Success(t *testing.T) {
 	mock := &mockIPFSClient{
 		getFn: func(_ context.Context, _ string) ([]byte, error) {
@@ -91,7 +86,6 @@ func TestGet_Success(t *testing.T) {
 	}
 	svc := newTestService(mock, 10)
 
-	// 46-char CIDv0: "Qm" + 44 chars
 	result, err := svc.Get(context.Background(), "QmTestCID0000000000000000000000000000000000000")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)

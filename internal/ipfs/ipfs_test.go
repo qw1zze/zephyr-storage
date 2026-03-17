@@ -148,7 +148,6 @@ func TestGet_NotFound(t *testing.T) {
 }
 
 func TestGet_TooLarge(t *testing.T) {
-	// 2 MB of data with maxSizeMB = 1
 	bigData := make([]byte, 2*1024*1024)
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
