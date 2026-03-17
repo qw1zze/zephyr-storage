@@ -11,16 +11,13 @@ import (
 	"net/http"
 )
 
-// addResponse is the JSON structure returned by Kubo /api/v0/add.
 type addResponse struct {
 	Hash string `json:"Hash"`
 }
 
-// Add uploads data to IPFS via the Kubo API and returns the CID.
 func (c *Client) Add(ctx context.Context, data []byte) (string, error) {
 	c.logger.DebugContext(ctx, "ipfs: add: starting", slog.Int("size", len(data)))
 
-	// Build multipart body with a "file" field.
 	var buf bytes.Buffer
 	w := multipart.NewWriter(&buf)
 
@@ -68,7 +65,6 @@ func (c *Client) Add(ctx context.Context, data []byte) (string, error) {
 	return result.Hash, nil
 }
 
-// Get downloads a blob from IPFS by CID via the Kubo Gateway.
 func (c *Client) Get(ctx context.Context, cid string) ([]byte, error) {
 	c.logger.DebugContext(ctx, "ipfs: get: starting", slog.String("cid", cid))
 
@@ -93,7 +89,6 @@ func (c *Client) Get(ctx context.Context, cid string) ([]byte, error) {
 		return nil, fmt.Errorf("ipfs: get: unexpected status %d", resp.StatusCode)
 	}
 
-	// Read up to maxSizeB + 1 to detect oversized blobs.
 	limit := c.maxSizeB + 1
 	data, err := io.ReadAll(io.LimitReader(resp.Body, limit))
 	if err != nil {
