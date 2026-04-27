@@ -5,6 +5,8 @@ import (
 	"log/slog"
 
 	"github.com/gofiber/fiber/v2"
+
+	"zephyr-storage/internal/service"
 )
 
 type blobService interface {
@@ -12,17 +14,24 @@ type blobService interface {
 	Get(ctx context.Context, cid string) ([]byte, error)
 }
 
-type Handler struct {
-	svc      blobService
-	maxSizeB int64
-	log      *slog.Logger
+type profileService interface {
+	SaveProfile(ctx context.Context, name, avatar string) (string, error)
+	GetProfile(ctx context.Context, cid string) (*service.Profile, error)
 }
 
-func NewHandler(svc blobService, maxSizeMB int64, log *slog.Logger) *Handler {
+type Handler struct {
+	svc        blobService
+	profileSvc profileService
+	maxSizeB   int64
+	log        *slog.Logger
+}
+
+func NewHandler(svc blobService, profileSvc profileService, maxSizeMB int64, log *slog.Logger) *Handler {
 	return &Handler{
-		svc:      svc,
-		maxSizeB: maxSizeMB * 1024 * 1024,
-		log:      log,
+		svc:        svc,
+		profileSvc: profileSvc,
+		maxSizeB:   maxSizeMB * 1024 * 1024,
+		log:        log,
 	}
 }
 
