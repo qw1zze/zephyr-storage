@@ -27,7 +27,7 @@ func main() {
 
 	ipfsClient := ipfs.New(cfg.IPFSApiURL, cfg.IPFSGatewayURL, 30, cfg.MaxBlobSizeMB, log)
 	svc := service.NewService(ipfsClient, cfg.MaxBlobSizeMB, log)
-	h := handler.NewHandler(svc, cfg.MaxBlobSizeMB, log)
+	h := handler.NewHandler(svc, svc, cfg.MaxBlobSizeMB, log)
 
 	app := fiber.New(fiber.Config{
 		ReadTimeout:  10 * time.Second,
@@ -44,6 +44,8 @@ func main() {
 	v1 := app.Group("/v1")
 	v1.Post("/blobs", h.UploadBlob)
 	v1.Get("/blobs/:cid", h.GetBlob)
+	v1.Post("/profiles", h.SaveProfile)
+	v1.Get("/profiles/:cid", h.GetProfile)
 
 	go func() {
 		addr := fmt.Sprintf(":%s", cfg.ServerPort)
